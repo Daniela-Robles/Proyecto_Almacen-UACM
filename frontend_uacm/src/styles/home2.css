@@ -393,6 +393,23 @@ body::before {
 .stock-alert-name { color: #333; font-weight: 500; }
 .stock-alert-qty  { color: #666; font-size: 0.83rem; white-space: nowrap; }
 
+.stock-alerts-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    background: none;
+    border: none;
+    color: #ef4444;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: color 0.2s;
+}
+
+.stock-alerts-toggle:hover { color: #dc2626; }
+
 /* ============================================
    ANIMACIONES
    ============================================ */

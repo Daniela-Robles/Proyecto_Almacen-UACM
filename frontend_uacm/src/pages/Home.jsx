@@ -38,6 +38,7 @@ function Home() {
   const [modalOpen, setModalOpen]       = useState(false)
   const [sessionInfo, setSessionInfo]   = useState(null)
   const [alertasStock, setAlertasStock] = useState([])
+  const [alertasExpanded, setAlertasExpanded] = useState(false)
 
   const heartbeatRef    = useRef(null)
   const sessionCheckRef = useRef(null)
@@ -325,7 +326,7 @@ function Home() {
                 <span className="info-card-badge">{alertasStock.length}</span>
               </div>
               <div className="stock-alerts-list">
-                {alertasStock.map(a => (
+                {(alertasExpanded ? alertasStock : alertasStock.slice(0, 3)).map(a => (
                   <div key={a.id_producto} className="stock-alert-item">
                     <span className="stock-alert-name">{a.nombre_producto}</span>
                     <span className="stock-alert-qty">
@@ -334,6 +335,13 @@ function Home() {
                   </div>
                 ))}
               </div>
+              {alertasStock.length > 3 && (
+                <button className="stock-alerts-toggle" onClick={() => setAlertasExpanded(v => !v)}>
+                  {alertasExpanded
+                    ? <><i className="fas fa-chevron-up"></i> Ver menos</>
+                    : <><i className="fas fa-chevron-down"></i> Ver {alertasStock.length - 3} más</>}
+                </button>
+              )}
             </div>
           )}
 
