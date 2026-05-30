@@ -284,7 +284,7 @@ function Home() {
             {tarjetas.map((t, i) => (
               <a key={i} href={t.url} className="hcard" style={{ '--hcard-index': i }}
                 onClick={t.url === '#' ? showComingSoon : undefined}>
-                <div className={`hcard-icon ${t.color}`}>
+<div className={`hcard-icon ${t.color}`}>
                   <i className={`fas ${t.icono}`}></i>
                 </div>
                 <div className="hcard-info">
