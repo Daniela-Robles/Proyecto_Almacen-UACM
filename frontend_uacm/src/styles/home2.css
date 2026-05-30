@@ -41,9 +41,8 @@ body::before {
     min-height: 100vh;
     position: fixed;
     left: 0; top: 0; bottom: 0;
-    background: rgba(8, 1, 1, 0.85);
-    backdrop-filter: blur(24px);
-    border-right: 1px solid rgba(255,255,255,0.07);
+    background: #3d0012;
+    border-right: 1px solid rgba(255,255,255,0.10);
     display: flex;
     flex-direction: column;
     z-index: 200;
@@ -79,7 +78,7 @@ body::before {
 .sidebar-sub {
     display: block;
     font-size: 0.7rem;
-    color: rgba(255,255,255,0.38);
+    color: rgba(255,255,255,0.55);
     margin-top: 2px;
 }
 
@@ -97,7 +96,7 @@ body::before {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.3px;
-    color: rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.50);
     padding: 0 0.6rem;
     margin: 0.5rem 0 0.6rem;
 }
@@ -109,7 +108,7 @@ body::before {
     padding: 0.65rem 0.8rem;
     border-radius: 10px;
     text-decoration: none;
-    color: rgba(255,255,255,0.55);
+    color: rgba(255,255,255,0.80);
     font-size: 0.875rem;
     font-weight: 500;
     transition: background 0.2s, color 0.2s;
@@ -123,18 +122,18 @@ body::before {
 }
 
 .sidebar-link:hover {
-    background: rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.9);
+    background: rgba(255,255,255,0.12);
+    color: white;
 }
 
 .sidebar-link--active {
-    background: rgba(107, 0, 23, 0.80);
+    background: rgba(255,255,255,0.15);
     color: white;
     font-weight: 600;
 }
 
 .sidebar-link--active:hover {
-    background: rgba(107, 0, 23, 0.90);
+    background: rgba(255,255,255,0.18);
 }
 
 /* Footer del sidebar */
@@ -175,7 +174,7 @@ body::before {
 
 .sidebar-user-role {
     font-size: 0.68rem;
-    color: rgba(255,255,255,0.38);
+    color: rgba(255,255,255,0.55);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -188,7 +187,7 @@ body::before {
     padding: 0.55rem 0.8rem;
     border-radius: 10px;
     text-decoration: none;
-    color: rgba(255,255,255,0.42);
+    color: rgba(255,255,255,0.62);
     font-size: 0.83rem;
     transition: background 0.2s, color 0.2s;
 }
