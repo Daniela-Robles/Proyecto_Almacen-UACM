@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-const HEARTBEAT_INTERVAL = 120000   // 2 minutos
-const SESSION_CHECK_INTERVAL = 300000 // 5 minutos
+const HEARTBEAT_INTERVAL = 120000
+const SESSION_CHECK_INTERVAL = 300000
 
-const tarjetas = [
-  { titulo: 'Gestión de Productos',  icono: 'fa-boxes',        color: 'blue',   url: '/GestiondeProductos/', stat: 'total_productos',       unidad: 'productos'  },
-  { titulo: 'Reportes e Inventario', icono: 'fa-chart-line',   color: 'navy',   url: '/Reportes/',           stat: 'total_solicitudes',     unidad: 'solicitudes'},
-  { titulo: 'Solicitud de Artículos',icono: 'fa-shopping-cart',color: 'teal',   url: '/Solicitudes/',        stat: 'solicitudes_pendientes',unidad: 'pendientes' },
-  { titulo: 'Gestión de Personal',   icono: 'fa-users',        color: 'violet', url: '/GestiondePersonal/',   stat: 'total_personal',        unidad: 'miembros'   },
+const modulos = [
+  { titulo: 'Gestión de Productos',  icono: 'fa-boxes',         color: 'blue',   url: '/GestiondeProductos/' },
+  { titulo: 'Reportes e Inventario', icono: 'fa-chart-line',    color: 'navy',   url: '/Reportes/'           },
+  { titulo: 'Solicitud de Artículos',icono: 'fa-shopping-cart', color: 'teal',   url: '/Solicitudes/'        },
+  { titulo: 'Gestión de Personal',   icono: 'fa-users',         color: 'violet', url: '/GestiondePersonal/'  },
 ]
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ function Home() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [modalOpen, setModalOpen]       = useState(false)
   const [sessionInfo, setSessionInfo]   = useState(null)
+  const [alertasStock, setAlertasStock] = useState([])
 
   const heartbeatRef    = useRef(null)
   const sessionCheckRef = useRef(null)
@@ -156,6 +157,14 @@ function Home() {
         total_productos: 0, total_solicitudes: 0,
         solicitudes_pendientes: 0, total_personal: 0, productos_bajo_stock: 0,
       }))
+  }, [])
+
+  // Cargar alertas de stock bajo
+  useEffect(() => {
+    fetch('/Solicitudes/alertas-stock/')
+      .then(r => r.json())
+      .then(data => setAlertasStock(data.alertas || []))
+      .catch(() => {})
   }, [])
 
   // Heartbeat
@@ -279,19 +288,50 @@ function Home() {
             <span className="role-badge">{datos.user_role}</span>
           </div>
 
-          {/* Tarjetas */}
-          <div className="hcards-grid">
-            {tarjetas.map((t, i) => (
-              <a key={i} href={t.url} className="hcard" style={{ '--hcard-index': i }}
-                onClick={t.url === '#' ? showComingSoon : undefined}>
-<div className={`hcard-icon ${t.color}`}>
-                  <i className={`fas ${t.icono}`}></i>
+          {/* KPIs */}
+          <div className="kpis-grid">
+            <div className="kpi-card">
+              <span className="kpi-number">{datos.total_productos}</span>
+              <span className="kpi-label"><i className="fas fa-boxes"></i> Productos registrados</span>
+            </div>
+            <div className="kpi-card">
+              <span className="kpi-number">{datos.total_solicitudes}</span>
+              <span className="kpi-label"><i className="fas fa-file-alt"></i> Solicitudes realizadas</span>
+            </div>
+            <div className="kpi-card kpi-card--alert" style={datos.solicitudes_pendientes > 0 ? { borderTop: '4px solid #ef4444' } : {}}>
+              <span className="kpi-number" style={datos.solicitudes_pendientes > 0 ? { color: '#ef4444' } : {}}>{datos.solicitudes_pendientes}</span>
+              <span className="kpi-label"><i className="fas fa-clock"></i> Pendientes por atender</span>
+            </div>
+          </div>
+
+          {/* Alertas de stock */}
+          {alertasStock.length > 0 && (
+            <div className="info-card">
+              <div className="info-card-title">
+                <i className="fas fa-exclamation-triangle"></i> Atención requerida
+                <span className="info-card-badge">{alertasStock.length}</span>
+              </div>
+              <div className="stock-alerts-list">
+                {alertasStock.map(a => (
+                  <div key={a.id_producto} className="stock-alert-item">
+                    <span className="stock-alert-name">{a.nombre_producto}</span>
+                    <span className="stock-alert-qty">
+                      <strong style={{ color: '#ef4444' }}>{a.cantidad}</strong> / mín. {a.stock_minimo}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Módulos */}
+          <div className="modules-grid">
+            {modulos.map((m, i) => (
+              <a key={i} href={m.url} className="module-card">
+                <div className={`module-icon-wrap ${m.color}`}>
+                  <i className={`fas ${m.icono}`}></i>
                 </div>
-                <div className="hcard-info">
-                  <span className="hcard-title">{t.titulo}</span>
-                  <span className="hcard-stat">{datos[t.stat]} <em>{t.unidad}</em></span>
-                </div>
-                <i className="fas fa-arrow-right hcard-arrow"></i>
+                <h4>{m.titulo}</h4>
               </a>
             ))}
           </div>
