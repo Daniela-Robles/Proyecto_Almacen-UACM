@@ -267,46 +267,61 @@ body::before {
 
 .kpis-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 18px;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     animation: fadeInUp 0.45s ease-out;
 }
 
 .kpi-card {
     background: white;
     border-radius: 20px;
-    padding: 26px 22px;
+    padding: 32px 22px 28px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.14);
     text-align: center;
     border-top: 4px solid transparent;
     transition: transform 0.22s ease, box-shadow 0.22s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .kpi-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 32px rgba(0,0,0,0.18);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(0,0,0,0.18);
 }
+
+.kpi-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(100,4,4,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #6b0017;
+    margin-bottom: 4px;
+}
+
+.kpi-icon--blue   { background: rgba(100,4,4,0.08);  color: #6b0017; }
+.kpi-icon--navy   { background: rgba(30,58,95,0.09);  color: #1e3a5f; }
+.kpi-icon--violet { background: rgba(59,7,100,0.09);  color: #5b21b6; }
 
 .kpi-number {
     display: block;
-    font-size: 2.8rem;
+    font-size: 3.2rem;
     font-weight: 800;
     color: #6b0017;
     line-height: 1;
-    margin-bottom: 8px;
 }
 
 .kpi-label {
     display: block;
-    color: #777;
-    font-size: 0.87rem;
+    color: #888;
+    font-size: 0.82rem;
     font-weight: 500;
-}
-
-.kpi-label i {
-    margin-right: 4px;
-    color: #bbb;
 }
 
 /* ============================================
@@ -508,12 +523,17 @@ footer p {
     .main-wrapper  { margin-left: 62px; }
 }
 
+@media (max-width: 1100px) {
+    .kpis-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 768px) {
-    .kpis-grid { grid-template-columns: 1fr; }
+    .kpis-grid { grid-template-columns: repeat(2, 1fr); }
     .dashboard-content { padding: 1.2rem; }
     .topbar { padding: 0.8rem 1.2rem; }
 }
 
 @media (max-width: 480px) {
-    .kpi-number { font-size: 2.4rem; }
+    .kpis-grid { grid-template-columns: 1fr; }
+    .kpi-number { font-size: 2.6rem; }
 }

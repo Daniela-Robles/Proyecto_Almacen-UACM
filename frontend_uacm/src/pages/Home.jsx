@@ -300,16 +300,26 @@ function Home() {
           {/* KPIs */}
           <div className="kpis-grid">
             <div className="kpi-card">
+              <div className="kpi-icon kpi-icon--blue"><i className="fas fa-boxes"></i></div>
               <span className="kpi-number">{datos.total_productos}</span>
-              <span className="kpi-label"><i className="fas fa-boxes"></i> Productos registrados</span>
+              <span className="kpi-label">Productos registrados</span>
             </div>
             <div className="kpi-card">
+              <div className="kpi-icon kpi-icon--navy"><i className="fas fa-file-alt"></i></div>
               <span className="kpi-number">{datos.total_solicitudes}</span>
-              <span className="kpi-label"><i className="fas fa-file-alt"></i> Solicitudes realizadas</span>
+              <span className="kpi-label">Solicitudes realizadas</span>
             </div>
             <div className="kpi-card" style={datos.solicitudes_pendientes > 0 ? { borderTop: '4px solid #ef4444' } : {}}>
+              <div className="kpi-icon" style={{ background: datos.solicitudes_pendientes > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(100,4,4,0.08)' }}>
+                <i className="fas fa-clock" style={{ color: datos.solicitudes_pendientes > 0 ? '#ef4444' : '#6b0017' }}></i>
+              </div>
               <span className="kpi-number" style={datos.solicitudes_pendientes > 0 ? { color: '#ef4444' } : {}}>{datos.solicitudes_pendientes}</span>
-              <span className="kpi-label"><i className="fas fa-clock"></i> Pendientes por atender</span>
+              <span className="kpi-label">Pendientes por atender</span>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-icon kpi-icon--violet"><i className="fas fa-users"></i></div>
+              <span className="kpi-number">{datos.total_personal}</span>
+              <span className="kpi-label">Personal registrado</span>
             </div>
           </div>
 
