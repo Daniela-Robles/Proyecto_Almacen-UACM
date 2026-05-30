@@ -232,61 +232,70 @@ function Home() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
-  if (!datos) return <p style={{ padding: '2rem' }}>Cargando...</p>
+  if (!datos) return <p style={{ padding: '2rem', color: 'white' }}>Cargando...</p>
 
-  const statusClass = sessionStatus === 'active' ? 'active' : sessionStatus === 'warning' ? 'warning' : 'error'
   const statusColor = sessionStatus === 'active' ? '#28a745' : sessionStatus === 'warning' ? '#ffc107' : '#dc3545'
   const statusTitle = sessionStatus === 'active' ? 'Sesión activa' : sessionStatus === 'warning' ? 'Problemas de conexión' : 'Sesión inválida'
 
   return (
     <>
-      {/* Header */}
-      <header>
-        <div className="header-content">
-          <div className="logo-section">
-            <img src="/static/media/logouacm.jpg" alt="Logo UACM" className="header-logo" />
-            <div className="header-title">
-              <h1>Sistema de Inventario</h1>
-              <p className="header-subtitle">Universidad Autónoma de la Ciudad de México</p>
-            </div>
-          </div>
-
-          <div className={`user-profile${dropdownOpen ? ' active' : ''}`} id="userProfile" onClick={() => setDropdownOpen(o => !o)}>
-            <div className="user-info">
-              <span className="user-name">{datos.persona_nombre}</span>
-              <span className="user-role">{datos.user_role}</span>
-            </div>
-            <div className="user-avatar">
-              <i className="fas fa-user"></i>
-            </div>
-            <span className={`session-status ${statusClass}`} title={statusTitle}>
-              <i className="fas fa-circle" style={{ color: statusColor }}></i>
-            </span>
-
-            <div className="dropdown-menu" id="dropdownMenu">
-              <a href="#" onClick={(e) => { e.preventDefault(); e.stopPropagation(); showSessionInfo() }} className="dropdown-item">
-                <i className="fas fa-info-circle"></i>
-                <span>Estado de Sesión</span>
-              </a>
-              <a href="/login/logout/" className="dropdown-item logout">
-                <i className="fas fa-sign-out-alt"></i>
-                <span>Cerrar Sesión</span>
-              </a>
-            </div>
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <img src="/static/media/logouacm.jpg" alt="UACM" className="sidebar-logo" />
+          <div className="sidebar-brand-text">
+            <span className="sidebar-title">Inventario UACM</span>
+            <span className="sidebar-sub">Sistema de Gestión</span>
           </div>
         </div>
-      </header>
 
-      {/* Contenido principal */}
-      <main>
-        <div className="container">
+        <nav className="sidebar-nav">
+          <p className="sidebar-section-label">Menú principal</p>
+          <a href="/home/" className="sidebar-link sidebar-link--active">
+            <i className="fas fa-th-large"></i>
+            <span>Dashboard</span>
+          </a>
+          {modulos.map((m, i) => (
+            <a key={i} href={m.url} className="sidebar-link">
+              <i className={`fas ${m.icono}`}></i>
+              <span>{m.titulo}</span>
+            </a>
+          ))}
+        </nav>
 
-          {/* Bienvenida */}
-          <div className="welcome-section">
-            <span className="greeting-badge">{saludo}</span>
-            <h2 className="welcome-title">{datos.persona_nombre}</h2>
-            <span className="role-badge">{datos.user_role}</span>
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-avatar"><i className="fas fa-user"></i></div>
+            <div>
+              <p className="sidebar-user-name">{datos.persona_nombre}</p>
+              <p className="sidebar-user-role">{datos.user_role}</p>
+            </div>
           </div>
+          <a href="/login/logout/" className="sidebar-logout">
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Cerrar sesión</span>
+          </a>
+        </div>
+      </aside>
+
+      {/* Área principal */}
+      <div className="main-wrapper">
+
+        {/* Topbar */}
+        <div className="topbar">
+          <span className="topbar-greeting">
+            {saludo}, <strong>{datos.persona_nombre.split(' ')[0]}</strong>
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <button className="topbar-info-btn" onClick={showSessionInfo} title="Estado de sesión">
+              <i className="fas fa-info-circle"></i>
+            </button>
+            <i className="fas fa-circle" style={{ color: statusColor, fontSize: '0.55rem' }} title={statusTitle}></i>
+          </div>
+        </div>
+
+        {/* Contenido */}
+        <div className="dashboard-content">
 
           {/* KPIs */}
           <div className="kpis-grid">
@@ -298,7 +307,7 @@ function Home() {
               <span className="kpi-number">{datos.total_solicitudes}</span>
               <span className="kpi-label"><i className="fas fa-file-alt"></i> Solicitudes realizadas</span>
             </div>
-            <div className="kpi-card kpi-card--alert" style={datos.solicitudes_pendientes > 0 ? { borderTop: '4px solid #ef4444' } : {}}>
+            <div className="kpi-card" style={datos.solicitudes_pendientes > 0 ? { borderTop: '4px solid #ef4444' } : {}}>
               <span className="kpi-number" style={datos.solicitudes_pendientes > 0 ? { color: '#ef4444' } : {}}>{datos.solicitudes_pendientes}</span>
               <span className="kpi-label"><i className="fas fa-clock"></i> Pendientes por atender</span>
             </div>
@@ -324,22 +333,15 @@ function Home() {
             </div>
           )}
 
-          {/* Módulos */}
-          <div className="modules-grid">
-            {modulos.map((m, i) => (
-              <a key={i} href={m.url} className="module-card">
-                <div className={`module-icon-wrap ${m.color}`}>
-                  <i className={`fas ${m.icono}`}></i>
-                </div>
-                <h4>{m.titulo}</h4>
-              </a>
-            ))}
-          </div>
-
         </div>
-      </main>
 
-      {/* Modal de sesión */}
+        <footer>
+          <p>"Nada Humano Me Es Ajeno"</p>
+          <p className="footer-copy">Sistema de Gestión UACM © 2026</p>
+        </footer>
+      </div>
+
+      {/* Modal sesión */}
       {modalOpen && (
         <div className="session-modal" style={{ display: 'block' }} onClick={(e) => {
           if (e.target.classList.contains('session-modal') || e.target.classList.contains('modal-overlay'))
@@ -373,12 +375,6 @@ function Home() {
           </div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer>
-        <p>"Nada Humano Me Es Ajeno"</p>
-        <p className="footer-copy">Sistema de Gestión UACM © 2026</p>
-      </footer>
     </>
   )
 }
