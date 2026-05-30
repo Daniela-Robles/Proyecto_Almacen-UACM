@@ -234,9 +234,6 @@ function Home() {
 
   if (!datos) return <p style={{ padding: '2rem', color: 'white' }}>Cargando...</p>
 
-  const statusColor = sessionStatus === 'active' ? '#28a745' : sessionStatus === 'warning' ? '#ffc107' : '#dc3545'
-  const statusTitle = sessionStatus === 'active' ? 'Sesión activa' : sessionStatus === 'warning' ? 'Problemas de conexión' : 'Sesión inválida'
-
   return (
     <>
       {/* Sidebar */}
@@ -286,12 +283,9 @@ function Home() {
           <span className="topbar-greeting">
             {saludo}, <strong>{datos.persona_nombre.split(' ')[0]}</strong>
           </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-            <button className="topbar-info-btn" onClick={showSessionInfo} title="Estado de sesión">
-              <i className="fas fa-info-circle"></i>
-            </button>
-            <i className="fas fa-circle" style={{ color: statusColor, fontSize: '0.55rem' }} title={statusTitle}></i>
-          </div>
+          <button className="topbar-info-btn" onClick={showSessionInfo} title="Estado de sesión">
+            <i className="fas fa-info-circle"></i>
+          </button>
         </div>
 
         {/* Contenido */}
