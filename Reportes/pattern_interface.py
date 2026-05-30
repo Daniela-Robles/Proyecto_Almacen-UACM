@@ -16,7 +16,6 @@ class ReporteBase(ABC):
         """Método plantilla que sigue la estructura del reporte"""
         datos = self.obtener_datos(
             fecha_inicio, fecha_fin)  # Obtención de los datos
-        print(f"Datos obtenidos para el reporte: {datos}")  # Depuración
         return self.exportar(datos)  # Exportación de los datos
 
     @abstractmethod
@@ -42,17 +41,12 @@ class ReporteSolicitudes(ReporteBase):
                     "Las fechas deben ser con zona horaria (aware).")
             solicitudes = list(Solicitudes.objects.filter(
                 fecha_sol__range=[fecha_inicio, fecha_fin]).values())
-            print(f"Solicitudes encontradas: {solicitudes}")  # Depuración
             return solicitudes
         else:
             solicitudes = list(Solicitudes.objects.all().values())
-            # Depuración
-            print(f"Solicitudes encontradas (sin fechas): {solicitudes}")
             return solicitudes
 
     def exportar(self, datos):
-        if not datos:
-            print("No se encontraron datos para exportar.")  # Depuración
         return datos  # Retorna los datos sin formato para su posterior procesamiento
 
 
@@ -62,12 +56,9 @@ class ReporteInventario(ReporteBase):
     def obtener_datos(self, fecha_inicio, fecha_fin):
         # No hay necesidad de usar las fechas, simplemente devuelve todos los artículos
         articulos = list(Articulo.objects.all().values())
-        print(f"Artículos encontrados: {articulos}")  # Depuración
         return articulos
 
     def exportar(self, datos):
-        if not datos:
-            print("No se encontraron datos para exportar.")  # Depuración
         return datos
 
 
@@ -97,7 +88,6 @@ class FiltroReporteDecorator(ReporteDecorator):
         if self.criterio:
             # Filtra los datos con el criterio especificado
             datos = [d for d in datos if self.criterio(d)]
-        print(f"Datos después de aplicar el filtro: {datos}")  # Depuración
         return datos
 
 
@@ -109,7 +99,6 @@ class ExportadorReporteDecorator(ReporteDecorator):
         self.formato = formato  # Establece el formato (PDF o CSV)
 
     def exportar(self, datos):
-        print(f"Exportando datos: {datos}")  # Depuración
         if self.formato == "PDF":
             return self._exportar_pdf(datos)  # Exporta los datos a PDF
         elif self.formato == "CSV":
@@ -118,7 +107,6 @@ class ExportadorReporteDecorator(ReporteDecorator):
 
     def _exportar_pdf(self, datos):
         """Exporta los datos en formato PDF"""
-        print(f"Generando PDF con los datos: {datos}")  # Depuración
         buffer = BytesIO()  # Crea un buffer en memoria para el PDF
         pdf = canvas.Canvas(buffer)
         y = 800  # Posición vertical inicial para escribir en el PDF
@@ -151,7 +139,6 @@ class ExportadorReporteDecorator(ReporteDecorator):
 
     def _exportar_csv(self, datos):
         """Exporta los datos en formato CSV"""
-        print(f"Generando CSV con los datos: {datos}")  # Depuración
         # Crea la respuesta en formato CSV
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="reporte.csv"'

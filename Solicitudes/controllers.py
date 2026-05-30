@@ -10,6 +10,9 @@ from .email import enviar_correo_solicitud, enviar_correo_entrega_parcial
 import json
 import re
 import traceback
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -125,7 +128,7 @@ def crear_solicitud(request):
                 pdf_bytes = pdf_response.content
                 enviar_correo_solicitud(sol, productos, pdf_bytes)
             except Exception:
-                print("[WARN] No se pudo enviar el correo:", traceback.format_exc())
+                logger.warning("No se pudo enviar el correo: %s", traceback.format_exc())
 
         return JsonResponse({
             "status": "success",
@@ -145,7 +148,7 @@ def crear_solicitud(request):
         })
 
     except Exception as e:
-        print("[ERROR crear_solicitud]", traceback.format_exc())
+        logger.error("crear_solicitud: %s", traceback.format_exc())
         return JsonResponse({"status": "error", "message": _parse_sp_error(e)}, status=400)
 
 
@@ -182,7 +185,7 @@ def buscar_solicitud(request, solicitud_id):
             }
         })
     except Exception as e:
-        print("[ERROR buscar_solicitud]", traceback.format_exc())
+        logger.error("buscar_solicitud: %s", traceback.format_exc())
         return JsonResponse({"error": _parse_sp_error(e)}, status=400)
 
 
@@ -207,7 +210,7 @@ def aprobar_solicitud(request, solicitud_id):
         return JsonResponse({"status": "success", "message": "Solicitud aprobada"})
 
     except Exception as e:
-        print("[ERROR aprobar_solicitud]", traceback.format_exc())
+        logger.error("aprobar_solicitud: %s", traceback.format_exc())
         msg = _parse_sp_error(e)
         status = 404 if 'no encontrada' in msg else 400
         return JsonResponse({"error": msg}, status=status)
@@ -234,7 +237,7 @@ def cancelar_solicitud(request, solicitud_id):
         return JsonResponse({"status": "success", "message": "Solicitud cancelada"})
 
     except Exception as e:
-        print("[ERROR cancelar_solicitud]", traceback.format_exc())
+        logger.error("cancelar_solicitud: %s", traceback.format_exc())
         msg = _parse_sp_error(e)
         status = 404 if 'no encontrada' in msg else 400
         return JsonResponse({"error": msg}, status=status)
@@ -278,7 +281,7 @@ def registrar_recepcion(request, solicitud_id):
                 correo_encargado = request.user.username
                 enviar_correo_entrega_parcial(sol, faltantes, id_solicitud_nueva, correo_encargado)
             except Exception:
-                print("[WARN] No se pudo enviar correo de entrega parcial:", traceback.format_exc())
+                logger.warning("No se pudo enviar correo de entrega parcial: %s", traceback.format_exc())
 
         return JsonResponse({
             "status": "success",
@@ -286,7 +289,7 @@ def registrar_recepcion(request, solicitud_id):
             "id_solicitud_nueva": id_solicitud_nueva,
         })
     except Exception as e:
-        print("[ERROR registrar_recepcion]", traceback.format_exc())
+        logger.error("registrar_recepcion: %s", traceback.format_exc())
         return JsonResponse({"error": _parse_sp_error(e)}, status=400)
 
 

@@ -1,23 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { getCookie } from '../utils/getCookie'
 import { usePersonal } from './usePersonal'
-
-function statusDotColor(nombre) {
-  const n = (nombre || '').toLowerCase().trim()
-  if (n === 'activo')  return '#28a745'
-  if (n === 'agotado') return '#dc3545'
-  return '#6c757d'
-}
-
-function prodTemplate(option) {
-  if (!option.id || !window.$) return option.text
-  const status = window.$(option.element).data('status') || ''
-  const color  = statusDotColor(status)
-  return window.$(`<span style="display:flex;align-items:center;gap:6px">
-    <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>
-    <span>${option.text}</span>
-  </span>`)
-}
 
 const formVacio = { matricula: '', nombre: '', id_rol: '', id_almacen: '', observaciones: '' }
 
@@ -29,10 +12,6 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
   const [buscarId, setBuscarId] = useState('')
   const [checkedItems, setCheckedItems] = useState(new Set())
   const [desdeAlertas, setDesdeAlertas] = useState(false)
-
-  const rolRef     = useRef(null)
-  const almacenRef = useRef(null)
-  const productoRef = useRef(null)
 
   const { personalValido, setPersonalValido, personalStatus, reset: resetPersonal, procesarQRPersonal, handleMatriculaBlur } = usePersonal({
     onPersonalFound: (data) => setForm(f => ({ ...f, ...data })),
@@ -74,73 +53,29 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
       .catch(() => {})
   }, [])
 
-  // ── Callback refs Select2 ──────────────────────────────────────────────────
-  const rolCallbackRef = useCallback(el => {
-    rolRef.current = el
-    if (!el || !window.$ || !window.$.fn?.select2) return
-    window.$(el).select2({ placeholder: 'Seleccione un cargo', width: '100%' })
-      .on('change.select2', e => setForm(f => ({ ...f, id_rol: e.target.value })))
-  }, [])
-
-  const almacenCallbackRef = useCallback(el => {
-    almacenRef.current = el
-    if (!el || !window.$ || !window.$.fn?.select2) return
-    window.$(el).select2({ placeholder: 'Seleccione un almacén', width: '100%' })
-      .on('change.select2', e => setForm(f => ({ ...f, id_almacen: e.target.value })))
-  }, [])
-
-  const productoCallbackRef = useCallback(el => {
-    productoRef.current = el
-    if (!el || !window.$ || !window.$.fn?.select2) return
-    window.$(el).select2({ placeholder: 'Seleccione un producto', width: '100%', templateResult: prodTemplate, templateSelection: prodTemplate })
-      .on('change.select2', e => setProdSel(s => ({ ...s, id_producto: e.target.value })))
-  }, [])
-
-  // ── Sync React → Select2 ───────────────────────────────────────────────────
+  // ── Limpiar selección de producto si ya no está disponible ─────────────────
   useEffect(() => {
-    if (!window.$ || !rolRef.current) return
-    window.$(rolRef.current).val(form.id_rol).trigger('change.select2')
-  }, [form.id_rol])
-
-  useEffect(() => {
-    if (!window.$ || !almacenRef.current) return
-    window.$(almacenRef.current).val(form.id_almacen).trigger('change.select2')
-  }, [form.id_almacen])
-
-  useEffect(() => {
-    if (!window.$ || !productoRef.current) return
-    window.$(productoRef.current).val(prodSel.id_producto).trigger('change.select2')
-  }, [prodSel.id_producto])
-
-  // ── Reinicializar Select2 de producto cuando cambia lista o almacén ────────
-  useEffect(() => {
-    if (!window.$ || !productoRef.current) return
-    const $el = window.$(productoRef.current)
-    if ($el.data('select2')) $el.select2('destroy')
-    $el.select2({ placeholder: 'Seleccione un producto', width: '100%', templateResult: prodTemplate, templateSelection: prodTemplate })
-      .on('change.select2', e => setProdSel(s => ({ ...s, id_producto: e.target.value })))
-    if (prodSel.id_producto) {
-      const sigueDisponible = productosFiltrados.find(p => String(p.id_producto) === prodSel.id_producto)
-      if (sigueDisponible) $el.val(prodSel.id_producto).trigger('change.select2')
-      else setProdSel(s => ({ ...s, id_producto: '' }))
-    }
+    if (!prodSel.id_producto) return
+    const sigueDisponible = productosFiltrados.find(p => String(p.id_producto) === prodSel.id_producto)
+    if (!sigueDisponible) setProdSel(s => ({ ...s, id_producto: '' }))
   }, [datos?.productos?.length, form.id_almacen])
 
-  // ── Reinicializar Select2 de almacén cuando cambia el rol ─────────────────
+  // ── Limpiar almacén si ya no está en la lista filtrada ────────────────────
   useEffect(() => {
-    if (!window.$ || !almacenRef.current) return
-    const $el = window.$(almacenRef.current)
-    if ($el.data('select2')) $el.select2('destroy')
-    $el.select2({ placeholder: 'Seleccione un almacén', width: '100%' })
-      .on('change.select2', e => setForm(f => ({ ...f, id_almacen: e.target.value })))
+    if (!solicitudActual && form.id_almacen && !almacenesFiltrados.find(a => String(a.id_almacen) === form.id_almacen)) {
+      setForm(f => ({ ...f, id_almacen: '' }))
+    }
     if (!solicitudActual && almacenesFiltrados.length === 1) {
       setForm(f => ({ ...f, id_almacen: String(almacenesFiltrados[0].id_almacen) }))
-    } else if (!solicitudActual && form.id_almacen && !almacenesFiltrados.find(a => String(a.id_almacen) === form.id_almacen)) {
-      setForm(f => ({ ...f, id_almacen: '' }))
     }
   }, [solicitanteEsEncargado])
 
   // ── Handlers ───────────────────────────────────────────────────────────────
+  const handleMatriculaChange = (value) => {
+    setForm(f => ({ ...f, matricula: value, nombre: '', id_rol: '' }))
+    resetPersonal()
+  }
+
   const handleAgregarProducto = () => {
     if (solicitudActual) return
     if (!prodSel.id_producto || prodSel.cantidad <= 0) return
@@ -210,11 +145,6 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
     }
   }
 
-  const handleMatriculaChange = (value) => {
-    setForm(f => ({ ...f, matricula: value, nombre: '', id_rol: '' }))
-    resetPersonal()
-  }
-
   const handleNuevaSolicitud = () => {
     setSolicitudActual(null)
     setForm(formVacio)
@@ -275,11 +205,7 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
 
   const handleCheck = async (id_producto) => {
     const nuevos = new Set(checkedItems)
-    if (nuevos.has(id_producto)) {
-      nuevos.delete(id_producto)
-      setCheckedItems(nuevos)
-      return
-    }
+    if (nuevos.has(id_producto)) { nuevos.delete(id_producto); setCheckedItems(nuevos); return }
     nuevos.add(id_producto)
     setCheckedItems(nuevos)
     if (nuevos.size === productos.length) {
@@ -289,10 +215,7 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
         confirmButtonColor: '#28a745',
       })
       if (conf.isConfirmed) await handleAprobar()
-      else {
-        nuevos.delete(id_producto)
-        setCheckedItems(new Set(nuevos))
-      }
+      else { nuevos.delete(id_producto); setCheckedItems(new Set(nuevos)) }
     }
   }
 
@@ -333,21 +256,14 @@ export function useSolicitud({ datos, alertasStock, setModalAlertas, setCampanaV
   }
 
   return {
-    // Estado
     form, setForm, productos, setProductos, prodSel, setProdSel,
     solicitudActual, setSolicitudActual, buscarId, setBuscarId,
     checkedItems, desdeAlertas,
-    // Personal
     personalValido, personalStatus,
-    // Derivados
     solicitanteEsEncargado, almacenesFiltrados, productosFiltrados, accionable,
-    // Refs para JSX
-    rolCallbackRef, almacenCallbackRef, productoCallbackRef,
-    // Handlers
-    handleAgregarProducto, handleEnviar, handleNuevaSolicitud,
+    handleMatriculaChange, handleAgregarProducto, handleEnviar, handleNuevaSolicitud,
     handleCancelar, handleAprobar, handleCheck,
     handleGenerarDesdeAlertas, handleBuscarSolicitud, handleExportar,
-    // De usePersonal
-    procesarQRPersonal, handleMatriculaBlur, handleMatriculaChange,
+    procesarQRPersonal, handleMatriculaBlur,
   }
 }

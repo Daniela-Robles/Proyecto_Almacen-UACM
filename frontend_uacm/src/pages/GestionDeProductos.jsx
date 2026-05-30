@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { SearchSelect } from '../components/SearchSelect'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -44,12 +45,6 @@ export default function GestionDeProductos() {
   const validacionTimeout   = useRef(null)
   const qrAutoTimeout       = useRef(null)
   const imagenInputRef      = useRef(null)
-  const estatusRef          = useRef(null)
-  const categoriaRef        = useRef(null)
-  const marcaRef            = useRef(null)
-  const unidadRef           = useRef(null)
-
-  const $ = () => window.$
 
   // ── Cargar catálogos e info de usuario ─────────────────────────────────────
   useEffect(() => {
@@ -62,47 +57,6 @@ export default function GestionDeProductos() {
       })
       .catch(() => setDatos({}))
   }, [])
-
-  // ── Inicializar Select2 cuando llegan los catálogos ────────────────────────
-  useEffect(() => {
-    if (!datos || !window.$) return
-    const $ = window.$
-
-    const initSelect2 = (ref, opts) => {
-      if (!ref.current) return
-      $(ref.current).select2(opts)
-    }
-
-    initSelect2(estatusRef,   { placeholder: 'Selecciona un estatus',    allowClear: false, width: '100%', minimumResultsForSearch: -1 })
-    initSelect2(categoriaRef, { placeholder: 'Selecciona una categoría', allowClear: true,  width: '100%', language: { noResults: () => 'Sin resultados' } })
-    initSelect2(marcaRef,     { placeholder: 'Selecciona una marca',     allowClear: true,  width: '100%', language: { noResults: () => 'Sin resultados' } })
-    initSelect2(unidadRef,    { placeholder: 'Selecciona una unidad',    allowClear: false, width: '100%', minimumResultsForSearch: Infinity })
-
-    const refs = [estatusRef, categoriaRef, marcaRef, unidadRef]
-    const keys = ['id_estatus', 'id_categoria', 'id_marca', 'id_unidad']
-    refs.forEach((ref, i) => {
-      if (!ref.current) return
-      $(ref.current).on('change.select2', e => {
-        setForm(f => ({ ...f, [keys[i]]: e.target.value }))
-      })
-    })
-
-    return () => {
-      refs.forEach(ref => {
-        try { if (ref.current) $(ref.current).select2('destroy') } catch {}
-      })
-    }
-  }, [datos])
-
-  // ── Sincronizar Select2 cuando React cambia el valor ──────────────────────
-  useEffect(() => {
-    if (!window.$ || !datos) return
-    const $ = window.$
-    if (estatusRef.current)   $(estatusRef.current).val(form.id_estatus).trigger('change')
-    if (categoriaRef.current) $(categoriaRef.current).val(form.id_categoria).trigger('change')
-    if (marcaRef.current)     $(marcaRef.current).val(form.id_marca).trigger('change')
-    if (unidadRef.current)    $(unidadRef.current).val(form.id_unidad).trigger('change')
-  }, [form.id_estatus, form.id_categoria, form.id_marca, form.id_unidad, datos])
 
   // ── Semáforo de stock ──────────────────────────────────────────────────────
   const actualizarSemaforo = useCallback((cantidadEfectiva, stockMinimo) => {
@@ -616,47 +570,49 @@ export default function GestionDeProductos() {
                 <p className="form-section-title"><i className="fas fa-tags"></i> Clasificación</p>
                 <div className="form-row form-row-2x2">
                   <div className="form-group">
-                    <label htmlFor="id_estatus"><i className="fas fa-toggle-on"></i> Estatus {camposError.has('id_estatus') && <span className="campo-requerido-mark">*</span>}</label>
-                    <div className={camposError.has('id_estatus') ? 'select2-wrapper-error' : ''}>
-                      <select id="id_estatus" name="id_estatus" className="form-control" required ref={estatusRef}
-                        onChange={() => limpiarError('id_estatus')}>
-                        <option value="" disabled>Selecciona un estatus</option>
-                        {datos.estatus_list?.map(e => <option key={e.id} value={e.id}>{e.nombre}</option>)}
-                      </select>
-                    </div>
+                    <label><i className="fas fa-toggle-on"></i> Estatus {camposError.has('id_estatus') && <span className="campo-requerido-mark">*</span>}</label>
+                    <SearchSelect
+                      searchable={false}
+                      options={datos.estatus_list?.map(e => ({ value: e.id, label: e.nombre })) || []}
+                      value={form.id_estatus}
+                      onChange={v => { limpiarError('id_estatus'); setForm(f => ({ ...f, id_estatus: v })) }}
+                      placeholder="Selecciona un estatus"
+                      error={camposError.has('id_estatus')}
+                    />
                     {camposError.has('id_estatus') && <span className="campo-requerido-msg"><i className="fas fa-exclamation-circle"></i> Campo requerido</span>}
                   </div>
                   <div className="form-group">
-                    <label htmlFor="id_categoria"><i className="fas fa-list"></i> Categoría {camposError.has('id_categoria') && <span className="campo-requerido-mark">*</span>}</label>
-                    <div className={camposError.has('id_categoria') ? 'select2-wrapper-error' : ''}>
-                      <select id="id_categoria" name="id_categoria" className="form-control" required ref={categoriaRef}
-                        onChange={() => limpiarError('id_categoria')}>
-                        <option value="" disabled>Selecciona una categoría</option>
-                        {datos.categorias_list?.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-                      </select>
-                    </div>
+                    <label><i className="fas fa-list"></i> Categoría {camposError.has('id_categoria') && <span className="campo-requerido-mark">*</span>}</label>
+                    <SearchSelect
+                      options={datos.categorias_list?.map(c => ({ value: c.id, label: c.nombre })) || []}
+                      value={form.id_categoria}
+                      onChange={v => { limpiarError('id_categoria'); setForm(f => ({ ...f, id_categoria: v })) }}
+                      placeholder="Selecciona una categoría"
+                      error={camposError.has('id_categoria')}
+                    />
                     {camposError.has('id_categoria') && <span className="campo-requerido-msg"><i className="fas fa-exclamation-circle"></i> Campo requerido</span>}
                   </div>
                   <div className="form-group">
-                    <label htmlFor="id_marca"><i className="fas fa-copyright"></i> Marca {camposError.has('id_marca') && <span className="campo-requerido-mark">*</span>}</label>
-                    <div className={camposError.has('id_marca') ? 'select2-wrapper-error' : ''}>
-                      <select id="id_marca" name="id_marca" className="form-control" required ref={marcaRef}
-                        onChange={() => limpiarError('id_marca')}>
-                        <option value="" disabled>Selecciona una marca</option>
-                        {datos.marcas_list?.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-                      </select>
-                    </div>
+                    <label><i className="fas fa-copyright"></i> Marca {camposError.has('id_marca') && <span className="campo-requerido-mark">*</span>}</label>
+                    <SearchSelect
+                      options={datos.marcas_list?.map(m => ({ value: m.id, label: m.nombre })) || []}
+                      value={form.id_marca}
+                      onChange={v => { limpiarError('id_marca'); setForm(f => ({ ...f, id_marca: v })) }}
+                      placeholder="Selecciona una marca"
+                      error={camposError.has('id_marca')}
+                    />
                     {camposError.has('id_marca') && <span className="campo-requerido-msg"><i className="fas fa-exclamation-circle"></i> Campo requerido</span>}
                   </div>
                   <div className="form-group">
-                    <label htmlFor="id_unidad"><i className="fas fa-ruler-combined"></i> Unidad de Medida {camposError.has('id_unidad') && <span className="campo-requerido-mark">*</span>}</label>
-                    <div className={camposError.has('id_unidad') ? 'select2-wrapper-error' : ''}>
-                      <select id="id_unidad" name="id_unidad" className="form-control" required ref={unidadRef}
-                        onChange={() => limpiarError('id_unidad')}>
-                        <option value="" disabled>Selecciona una unidad</option>
-                        {datos.unidades_list?.map(u => <option key={u.id} value={u.id}>{u.nombre} ({u.abreviatura})</option>)}
-                      </select>
-                    </div>
+                    <label><i className="fas fa-ruler-combined"></i> Unidad de Medida {camposError.has('id_unidad') && <span className="campo-requerido-mark">*</span>}</label>
+                    <SearchSelect
+                      options={datos.unidades_list?.map(u => ({ value: u.id, label: `${u.nombre} (${u.abreviatura})` })) || []}
+                      value={form.id_unidad}
+                      onChange={v => { limpiarError('id_unidad'); setForm(f => ({ ...f, id_unidad: v })) }}
+                      placeholder="Selecciona una unidad"
+                      searchable={false}
+                      error={camposError.has('id_unidad')}
+                    />
                     {camposError.has('id_unidad') && <span className="campo-requerido-msg"><i className="fas fa-exclamation-circle"></i> Campo requerido</span>}
                   </div>
                 </div>

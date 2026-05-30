@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { getCookie } from '../utils/getCookie'
 
 const formVacio = { id_producto: '', cantidad_maxima: 5, periodo: 'diario' }
@@ -7,24 +7,6 @@ export function useLimites({ datos }) {
   const [modalLimites, setModalLimites] = useState(false)
   const [limites, setLimites] = useState([])
   const [formLimite, setFormLimite] = useState(formVacio)
-  const limiteProdRef = useRef(null)
-  const limitePeriRef = useRef(null)
-
-  useEffect(() => {
-    if (!modalLimites || !window.$ || !window.$.fn?.select2) return
-    const $prod = window.$(limiteProdRef.current)
-    const $peri = window.$(limitePeriRef.current)
-    $prod.select2({ placeholder: 'Seleccione...', width: '100%', dropdownParent: window.$('body') })
-      .on('change.select2', e => setFormLimite(f => ({ ...f, id_producto: e.target.value })))
-    $peri.select2({ width: '100%', minimumResultsForSearch: Infinity, dropdownParent: window.$('body') })
-      .on('change.select2', e => setFormLimite(f => ({ ...f, periodo: e.target.value })))
-    $prod.val(formLimite.id_producto).trigger('change.select2')
-    $peri.val(formLimite.periodo).trigger('change.select2')
-    return () => {
-      if ($prod.data('select2')) $prod.select2('destroy')
-      if ($peri.data('select2')) $peri.select2('destroy')
-    }
-  }, [modalLimites])
 
   const abrirModalLimites = async () => {
     try {
@@ -81,5 +63,5 @@ export function useLimites({ datos }) {
     }
   }
 
-  return { modalLimites, setModalLimites, limites, formLimite, setFormLimite, limiteProdRef, limitePeriRef, abrirModalLimites, handleGuardarLimite, handleEliminarLimite }
+  return { modalLimites, setModalLimites, limites, formLimite, setFormLimite, abrirModalLimites, handleGuardarLimite, handleEliminarLimite }
 }

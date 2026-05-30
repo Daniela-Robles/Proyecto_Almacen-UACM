@@ -68,9 +68,6 @@ def inventario(request):
         cursor.callproc('GenerarInventario')
         results = cursor.fetchall()
 
-    # Imprimir los resultados en la terminal para depurar
-    print("Resultados de inventario:", results)
-
     # Convertir los resultados a una lista de diccionarios
     articulos = []
     for result in results:

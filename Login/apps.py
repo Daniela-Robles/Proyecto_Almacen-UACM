@@ -5,7 +5,7 @@ class LoginConfig(AppConfig):
     name = 'Login'
 
     def ready(self):
-        print("La aplicación Login está cargada correctamente")
+        pass
 
 
 """class LoginConfig(AppConfig):

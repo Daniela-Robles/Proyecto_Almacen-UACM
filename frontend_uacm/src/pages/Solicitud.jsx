@@ -5,6 +5,7 @@ import { useQr } from '../hooks/useQr'
 import { useNuevoProducto } from '../hooks/useNuevoProducto'
 import { useRecepcion } from '../hooks/useRecepcion'
 import { useLimites } from '../hooks/useLimites'
+import { SearchSelect } from '../components/SearchSelect'
 
 const statusMap = {
   ok:       { cls: 'personal-ok',      html: '<i class="fas fa-check-circle"></i> Personal encontrado' },
@@ -30,7 +31,6 @@ export default function Solicitud() {
     solicitudActual, setSolicitudActual, buscarId, setBuscarId,
     checkedItems, personalValido, personalStatus,
     solicitanteEsEncargado, almacenesFiltrados, productosFiltrados, accionable,
-    rolCallbackRef, almacenCallbackRef, productoCallbackRef,
     handleAgregarProducto, handleEnviar, handleNuevaSolicitud,
     handleCancelar, handleAprobar, handleCheck,
     handleGenerarDesdeAlertas, handleBuscarSolicitud, handleExportar,
@@ -43,7 +43,7 @@ export default function Solicitud() {
 
   const { modalRecepcion, setModalRecepcion, recepcionItems, setRecepcionItems, abrirModalRecepcion, handleConfirmarRecepcion } = useRecepcion({ solicitudActual, setSolicitudActual })
 
-  const { modalLimites, setModalLimites, limites, formLimite, setFormLimite, limiteProdRef, limitePeriRef, abrirModalLimites, handleGuardarLimite, handleEliminarLimite } = useLimites({ datos })
+  const { modalLimites, setModalLimites, limites, formLimite, setFormLimite, abrirModalLimites, handleGuardarLimite, handleEliminarLimite } = useLimites({ datos })
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -186,17 +186,23 @@ export default function Solicitud() {
                   </div>
                   <div className="form-group">
                     <label><i className="fas fa-briefcase"></i> Cargo</label>
-                    <select ref={rolCallbackRef} disabled={!!solicitudActual || !!form.id_rol}>
-                      <option value="">Seleccione un cargo</option>
-                      {datos.roles?.map(r => <option key={r.id_rol} value={r.id_rol}>{r.nombre_rol}</option>)}
-                    </select>
+                    <SearchSelect
+                      options={datos.roles?.map(r => ({ value: r.id_rol, label: r.nombre_rol })) || []}
+                      value={form.id_rol}
+                      onChange={v => setForm(f => ({ ...f, id_rol: v }))}
+                      disabled={!!solicitudActual || !!form.id_rol}
+                      placeholder="Seleccione un cargo"
+                    />
                   </div>
                   <div className="form-group">
                     <label><i className="fas fa-warehouse"></i> Almacén destino</label>
-                    <select ref={almacenCallbackRef} disabled={!!solicitudActual}>
-                      <option value="">Seleccione un almacén</option>
-                      {almacenesFiltrados.map(a => <option key={a.id_almacen} value={a.id_almacen}>{a.tipo_almacen}</option>)}
-                    </select>
+                    <SearchSelect
+                      options={almacenesFiltrados.map(a => ({ value: a.id_almacen, label: a.tipo_almacen }))}
+                      value={form.id_almacen}
+                      onChange={v => setForm(f => ({ ...f, id_almacen: v }))}
+                      disabled={!!solicitudActual}
+                      placeholder="Seleccione un almacén"
+                    />
                   </div>
                   <div className="form-group">
                     <label><i className="fas fa-calendar-alt"></i> Fecha</label>
@@ -239,14 +245,25 @@ export default function Solicitud() {
                     <div className="form-grid product-selector">
                       <div className="form-group">
                         <label><i className="fas fa-box"></i> Producto</label>
-                        <select ref={productoCallbackRef}>
-                          <option value="">Seleccione un producto</option>
-                          {productosFiltrados.map(p => (
-                            <option key={p.id_producto} value={p.id_producto} data-status={p.nombre_estatus || ''}>
-                              {p.nombre_producto} ({p.cantidad})
-                            </option>
-                          ))}
-                        </select>
+                        <SearchSelect
+                          options={productosFiltrados.map(p => ({
+                            value: p.id_producto,
+                            label: `${p.nombre_producto} (${p.cantidad})`,
+                            estatus: p.nombre_estatus || '',
+                          }))}
+                          value={prodSel.id_producto}
+                          onChange={v => setProdSel(s => ({ ...s, id_producto: v }))}
+                          placeholder="Seleccione un producto"
+                          renderOption={opt => (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{
+                                width: '8px', height: '8px', borderRadius: '50%', flexShrink: 0,
+                                background: opt.estatus?.toLowerCase() === 'activo' ? '#28a745' : '#6c757d',
+                              }} />
+                              {opt.label}
+                            </span>
+                          )}
+                        />
                       </div>
                       <div className="form-group">
                         <label><i className="fas fa-sort-numeric-up"></i> Cantidad</label>
@@ -535,10 +552,12 @@ export default function Solicitud() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px 140px auto', gap: '0.75rem', alignItems: 'end', marginBottom: '1.25rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
                 <label>Producto</label>
-                <select ref={limiteProdRef}>
-                  <option value="">Seleccione...</option>
-                  {datos.productos?.map(p => <option key={p.id_producto} value={p.id_producto}>{p.nombre_producto}</option>)}
-                </select>
+                <SearchSelect
+                  options={datos.productos?.map(p => ({ value: p.id_producto, label: p.nombre_producto })) || []}
+                  value={formLimite.id_producto}
+                  onChange={v => setFormLimite(f => ({ ...f, id_producto: v }))}
+                  placeholder="Seleccione..."
+                />
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label>Máximo</label>
@@ -547,11 +566,16 @@ export default function Solicitud() {
               </div>
               <div className="form-group" style={{ margin: 0 }}>
                 <label>Periodo</label>
-                <select ref={limitePeriRef}>
-                  <option value="diario">Diario</option>
-                  <option value="semanal">Semanal</option>
-                  <option value="mensual">Mensual</option>
-                </select>
+                <SearchSelect
+                  searchable={false}
+                  options={[
+                    { value: 'diario', label: 'Diario' },
+                    { value: 'semanal', label: 'Semanal' },
+                    { value: 'mensual', label: 'Mensual' },
+                  ]}
+                  value={formLimite.periodo}
+                  onChange={v => setFormLimite(f => ({ ...f, periodo: v }))}
+                />
               </div>
               <button type="button" className="btn btn-primary" onClick={handleGuardarLimite}>
                 <i className="fas fa-save"></i> Guardar
