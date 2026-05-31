@@ -42,26 +42,22 @@ export default function Reportes() {
     if (form.fecha_inicio > form.fecha_fin) {
       window.Swal.fire({ icon: 'warning', title: 'Fechas inválidas', text: 'La fecha de inicio no puede ser mayor que la de fin.', confirmButtonColor: '#640404' }); return
     }
-
     setLoadingReporte(true)
     try {
       const fd = new FormData()
       fd.append('fecha_inicio', form.fecha_inicio)
       fd.append('fecha_fin',    form.fecha_fin)
       fd.append('formato',      form.formato)
-
       const res  = await fetch('/Reportes/reporte_solicitudes/', {
         method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') }, body: fd,
       })
       const data = await res.json()
-
       if (data.url) {
         const a = document.createElement('a')
         a.href = data.url; a.download = 'reporte'
         document.body.appendChild(a); a.click(); document.body.removeChild(a)
         return
       }
-
       const filas = data.productos || data.datos || []
       if (filas.length === 0) {
         window.Swal.fire({ icon: 'info', title: 'Sin resultados', text: 'No se encontraron resultados para ese período.', confirmButtonColor: '#640404' }); return
@@ -105,22 +101,18 @@ export default function Reportes() {
             <span className="sidebar-sub">Sistema de Gestión</span>
           </div>
         </div>
-
         <nav className="sidebar-nav">
           <p className="sidebar-section-label">Menú principal</p>
           <a href="/home/" className="sidebar-link">
-            <i className="fas fa-th-large"></i>
-            <span>Dashboard</span>
+            <i className="fas fa-th-large"></i><span>Dashboard</span>
           </a>
           {modulos.map((m, i) => (
             <a key={i} href={m.url}
               className={`sidebar-link${m.url === '/Reportes/' ? ' sidebar-link--active' : ''}`}>
-              <i className={`fas ${m.icono}`}></i>
-              <span>{m.titulo}</span>
+              <i className={`fas ${m.icono}`}></i><span>{m.titulo}</span>
             </a>
           ))}
         </nav>
-
         <div className="sidebar-footer">
           <div className="sidebar-user">
             <div className="sidebar-avatar"><i className="fas fa-user"></i></div>
@@ -130,8 +122,7 @@ export default function Reportes() {
             </div>
           </div>
           <a href="/login/logout/" className="sidebar-logout">
-            <i className="fas fa-sign-out-alt"></i>
-            <span>Cerrar sesión</span>
+            <i className="fas fa-sign-out-alt"></i><span>Cerrar sesión</span>
           </a>
         </div>
       </aside>
@@ -139,7 +130,6 @@ export default function Reportes() {
       {/* Área principal */}
       <div className="main-wrapper">
 
-        {/* Topbar */}
         <div className="topbar">
           <div>
             <p className="topbar-title">Reportes e Inventario</p>
@@ -147,16 +137,19 @@ export default function Reportes() {
           </div>
         </div>
 
-        {/* Contenido */}
         <div className="dashboard-content">
 
-          {/* Reporte de solicitudes */}
-          <div className="card">
-            <div className="card-title">
-              <i className="fas fa-chart-bar"></i> Reporte de Solicitudes
-            </div>
-            <form onSubmit={handleGenerarReporte}>
-              <div className="form-grid">
+          {/* ── Reporte de solicitudes ── */}
+          <div className="report-section">
+            <div className="report-controls">
+              <div className="controls-header">
+                <div className="controls-icon"><i className="fas fa-chart-bar"></i></div>
+                <div>
+                  <p className="controls-title">Reporte de Solicitudes</p>
+                  <p className="controls-desc">Filtra por rango de fechas y formato de exportación</p>
+                </div>
+              </div>
+              <form onSubmit={handleGenerarReporte} className="controls-form">
                 <div className="form-group">
                   <label>Fecha inicio</label>
                   <input type="date" value={form.fecha_inicio}
@@ -174,74 +167,109 @@ export default function Reportes() {
                     <option value="CSV">CSV</option>
                   </select>
                 </div>
-              </div>
-              <div className="form-actions">
                 <button type="submit" className="btn btn-primary" disabled={loadingReporte}>
-                  <i className="fas fa-chart-bar"></i>
+                  <i className="fas fa-file-export"></i>
                   {loadingReporte ? 'Generando...' : 'Generar reporte'}
                 </button>
-              </div>
-            </form>
+              </form>
+            </div>
 
-            {mostrarResultados && (
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID</th><th>Almacén</th><th>Artículo</th>
-                      <th>Cantidad</th><th>Solicitante</th><th>Fecha</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {resultados.map((item, i) => (
-                      <tr key={i}>
-                        <td>{item.id_solicitud        || '-'}</td>
-                        <td>{item.almacen_direccion   || '-'}</td>
-                        <td>{item.nom_articulo        || '-'}</td>
-                        <td>{item.cantidad            || '-'}</td>
-                        <td>{item.nombre_persona      || '-'}</td>
-                        <td>{item.fecha_sol           || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <div className="report-results">
+              {mostrarResultados ? (
+                <>
+                  <div className="results-header">
+                    <span className="results-count">{resultados.length} resultado{resultados.length !== 1 ? 's' : ''}</span>
+                    <button className="btn-clear" onClick={() => { setResultados([]); setMostrarResultados(false) }}>
+                      <i className="fas fa-times"></i> Limpiar
+                    </button>
+                  </div>
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr><th>ID</th><th>Almacén</th><th>Artículo</th><th>Cantidad</th><th>Solicitante</th><th>Fecha</th></tr>
+                      </thead>
+                      <tbody>
+                        {resultados.map((item, i) => (
+                          <tr key={i}>
+                            <td>{item.id_solicitud      || '-'}</td>
+                            <td>{item.almacen_direccion || '-'}</td>
+                            <td>{item.nom_articulo      || '-'}</td>
+                            <td>{item.cantidad          || '-'}</td>
+                            <td>{item.nombre_persona    || '-'}</td>
+                            <td>{item.fecha_sol         || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon"><i className="fas fa-chart-bar"></i></div>
+                  <p className="empty-title">Sin resultados aún</p>
+                  <p className="empty-desc">Selecciona un rango de fechas y genera el reporte</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Inventario general */}
-          <div className="card">
-            <div className="card-title">
-              <i className="fas fa-boxes"></i> Inventario General
-            </div>
-            <div className="form-actions">
-              <button className="btn btn-secondary" onClick={handleVerInventario} disabled={loadingInventario}>
-                <i className="fas fa-boxes"></i>
-                {loadingInventario ? 'Cargando...' : 'Ver inventario'}
-              </button>
+          {/* ── Inventario general ── */}
+          <div className="report-section">
+            <div className="report-controls">
+              <div className="controls-header">
+                <div className="controls-icon controls-icon--teal"><i className="fas fa-boxes"></i></div>
+                <div>
+                  <p className="controls-title">Inventario General</p>
+                  <p className="controls-desc">Consulta el estado actual de todos los artículos</p>
+                </div>
+              </div>
+              <div className="controls-form">
+                <p className="controls-hint">
+                  <i className="fas fa-info-circle"></i>
+                  Muestra todos los artículos registrados con su cantidad y estatus actual.
+                </p>
+                <button className="btn btn-secondary" onClick={handleVerInventario} disabled={loadingInventario}>
+                  <i className="fas fa-boxes"></i>
+                  {loadingInventario ? 'Cargando...' : 'Ver inventario'}
+                </button>
+              </div>
             </div>
 
-            {mostrarInventario && (
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Artículo</th><th>Descripción</th><th>Cantidad</th><th>Estatus</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {inventario.map((item, i) => (
-                      <tr key={i}>
-                        <td>{item.nom_articulo  || '-'}</td>
-                        <td>{item.desc_articulo || '-'}</td>
-                        <td>{item.cantidad      || '-'}</td>
-                        <td>{item.nomb_estatus  || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
+            <div className="report-results">
+              {mostrarInventario ? (
+                <>
+                  <div className="results-header">
+                    <span className="results-count">{inventario.length} artículo{inventario.length !== 1 ? 's' : ''}</span>
+                    <button className="btn-clear" onClick={() => { setInventario([]); setMostrarInventario(false) }}>
+                      <i className="fas fa-times"></i> Limpiar
+                    </button>
+                  </div>
+                  <div className="table-wrapper">
+                    <table>
+                      <thead>
+                        <tr><th>Artículo</th><th>Descripción</th><th>Cantidad</th><th>Estatus</th></tr>
+                      </thead>
+                      <tbody>
+                        {inventario.map((item, i) => (
+                          <tr key={i}>
+                            <td>{item.nom_articulo  || '-'}</td>
+                            <td>{item.desc_articulo || '-'}</td>
+                            <td>{item.cantidad      || '-'}</td>
+                            <td>{item.nomb_estatus  || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <div className="empty-state">
+                  <div className="empty-icon empty-icon--teal"><i className="fas fa-boxes"></i></div>
+                  <p className="empty-title">Inventario no cargado</p>
+                  <p className="empty-desc">Haz clic en "Ver inventario" para consultar los artículos</p>
+                </div>
+              )}
+            </div>
           </div>
 
         </div>
