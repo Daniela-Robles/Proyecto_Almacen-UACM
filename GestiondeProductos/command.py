@@ -18,17 +18,34 @@ logger = logging.getLogger(__name__)
 # ── Funciones del Modelo ──────────────────────────────────────────────────────
 
 def generar_qr_temp(data):
-    """Genera un QR temporal en memoria — lógica de negocio del Modelo"""
+    """Genera un QR temporal en memoria con logo UACM centrado"""
     import qrcode
+    from PIL import Image
+
     qr = qrcode.QRCode(
         version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
         border=4,
     )
     qr.add_data(data)
     qr.make(fit=True)
-    return qr.make_image(fill_color='black', back_color='white')
+    qr_img = qr.make_image(fill_color='black', back_color='white').convert('RGBA')
+
+    logo_path = os.path.join(settings.BASE_DIR, 'frontend_uacm', 'public', 'media', 'logouacm.jpg')
+    if os.path.exists(logo_path):
+        logo = Image.open(logo_path).convert('RGBA')
+        qr_w, qr_h = qr_img.size
+        logo_size = int(qr_w * 0.25)
+        logo = logo.resize((logo_size, logo_size), Image.LANCZOS)
+        # Marco blanco alrededor del logo para mayor legibilidad
+        padding = 6
+        bg = Image.new('RGBA', (logo_size + padding * 2, logo_size + padding * 2), (255, 255, 255, 255))
+        bg.paste(logo, (padding, padding))
+        pos = ((qr_w - bg.width) // 2, (qr_h - bg.height) // 2)
+        qr_img.paste(bg, pos, mask=bg)
+
+    return qr_img
 
 
 def guardar_imagen_categoria(imagen_file, id_producto, categoria_nombre):
