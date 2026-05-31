@@ -22,13 +22,19 @@ const formVacio = {
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
+const modulos = [
+  { titulo: 'Gestión de Productos',   icono: 'fa-boxes',         url: '/GestiondeProductos/' },
+  { titulo: 'Reportes e Inventario',  icono: 'fa-chart-line',    url: '/Reportes/'           },
+  { titulo: 'Solicitud de Artículos', icono: 'fa-shopping-cart', url: '/Solicitudes/'        },
+  { titulo: 'Gestión de Personal',    icono: 'fa-users',         url: '/GestiondePersonal/'  },
+]
+
 export default function GestionDeProductos() {
   const [datos, setDatos]               = useState(null)
   const [form, setForm]                 = useState(formVacio)
   const [modo, setModo]                 = useState('add')
   const [buscarId, setBuscarId]         = useState('')
   const [loading, setLoading]           = useState(false)
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [imageModal, setImageModal]     = useState({ open: false, src: '', nombre: '', id: '', categoria: '' })
   const [imagen, setImagen]             = useState({ preview: null, nombre: 'No se seleccionó archivo', nueva: false, file: null })
   const [qr, setQr]                     = useState({ id: '----', nombre: '----', url: null })
@@ -404,57 +410,74 @@ export default function GestionDeProductos() {
 
   return (
     <>
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <div className="logo-section">
-            <img src="/static/media/logouacm.jpg" alt="Logo UACM" className="header-logo" />
-            <a href="/home/" className="home-button" aria-label="Inicio"><i className="fas fa-home"></i></a>
-            <div className="header-title">
-              <h1>Gestión de Productos</h1>
-              <p className="header-subtitle">Control de inventario del almacén</p>
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-brand">
+          <img src="/static/media/logouacm.jpg" alt="UACM" className="sidebar-logo" />
+          <div className="sidebar-brand-text">
+            <span className="sidebar-title">Inventario UACM</span>
+            <span className="sidebar-sub">Sistema de Gestión</span>
+          </div>
+        </div>
+        <nav className="sidebar-nav">
+          <p className="sidebar-section-label">Menú principal</p>
+          <a href="/home/" className="sidebar-link">
+            <i className="fas fa-th-large"></i><span>Dashboard</span>
+          </a>
+          {modulos.map((m, i) => (
+            <a key={i} href={m.url}
+              className={`sidebar-link${m.url === '/GestiondeProductos/' ? ' sidebar-link--active' : ''}`}>
+              <i className={`fas ${m.icono}`}></i><span>{m.titulo}</span>
+            </a>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <div className="sidebar-avatar"><i className="fas fa-user"></i></div>
+            <div>
+              <p className="sidebar-user-name">{datos.persona_nombre}</p>
+              <p className="sidebar-user-role">{datos.user_role}</p>
             </div>
           </div>
-          <div className={`user-profile${dropdownOpen ? ' active' : ''}`} id="userProfile" onClick={() => setDropdownOpen(o => !o)}>
-            <div className="user-info">
-              <span className="user-name">{datos.persona_nombre}</span>
-              <span className="user-role">{datos.user_role}</span>
+          <a href="/login/logout/" className="sidebar-logout">
+            <i className="fas fa-sign-out-alt"></i><span>Cerrar sesión</span>
+          </a>
+        </div>
+      </aside>
+
+      {/* Área principal */}
+      <div className="main-wrapper">
+
+        {/* Topbar */}
+        <div className="topbar">
+          <div>
+            <p className="topbar-title">Gestión de Productos</p>
+            <p className="topbar-subtitle">Control de inventario del almacén</p>
+          </div>
+          <div className="topbar-actions">
+            <div className={`modo-badge ${modo === 'add' ? 'modo-badge--add' : 'modo-badge--edit'}`}
+              onClick={modo === 'edit' ? handleNuevo : undefined}
+              style={{ cursor: modo === 'edit' ? 'pointer' : 'default' }}>
+              <i className={`fas ${modo === 'add' ? 'fa-plus-circle' : 'fa-edit'}`}></i>
+              <span>{modo === 'add' ? 'Nuevo producto' : `Editando #${form.id_producto}`}</span>
+              {modo === 'edit' && <span className="modo-badge-reset"><i className="fas fa-undo"></i></span>}
             </div>
-            <div className="user-avatar"><i className="fas fa-user"></i></div>
-            <div className="dropdown-menu">
-              <a href="/home/" className="dropdown-item"><i className="fas fa-home"></i><span>Inicio</span></a>
-              <a href="/login/logout/" className="dropdown-item logout"><i className="fas fa-sign-out-alt"></i><span>Cerrar Sesión</span></a>
+            <div className="topbar-search">
+              <input type="text" placeholder="Buscar por ID" value={buscarId}
+                onChange={e => setBuscarId(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleBuscar()} />
+              <button onClick={handleBuscar} aria-label="Buscar">
+                <i className="fas fa-search"></i>
+              </button>
             </div>
           </div>
         </div>
-      </header>
 
-      <main className="main-content" role="main">
+        <main className="main-content" role="main">
         <div className="layout-grid">
 
           {/* ── COLUMNA IZQUIERDA: Formulario ── */}
           <div className="form-container">
-
-            {/* Barra de control: modo + búsqueda */}
-            <div className="control-bar">
-              <div
-                className={`modo-indicator ${modo === 'add' ? 'modo-add' : 'modo-edit'}`}
-                onClick={modo === 'edit' ? handleNuevo : undefined}
-                style={{ cursor: modo === 'edit' ? 'pointer' : 'default' }}
-              >
-                <i className={`fas ${modo === 'add' ? 'fa-plus-circle' : 'fa-edit'}`}></i>
-                <span>{modo === 'add' ? 'Nuevo producto' : `Editando #${form.id_producto} — ${form.nombre_producto}`}</span>
-                {modo === 'edit' && <><span className="modo-separator">|</span><span className="modo-action"><i className="fas fa-undo"></i> Nuevo</span></>}
-              </div>
-              <div className="search-container" role="search">
-                <input type="text" id="buscar" placeholder="Buscar por ID" className="form-control"
-                  value={buscarId} onChange={e => setBuscarId(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleBuscar()} />
-                <button className="search-btn" aria-label="Buscar producto" onClick={handleBuscar}>
-                  <i className="fas fa-search"></i>
-                </button>
-              </div>
-            </div>
 
             {/* Formulario */}
             <form id="product-form" encType="multipart/form-data" noValidate onSubmit={e => e.preventDefault()}>
@@ -660,7 +683,13 @@ export default function GestionDeProductos() {
             </div>
           </aside>
         </div>
-      </main>
+        </main>
+
+        <footer>
+          <p>"Nada Humano Me Es Ajeno"</p>
+          <p className="footer-copy">Sistema de Gestión UACM © 2026</p>
+        </footer>
+      </div>
 
       {/* Modal imagen completa */}
       {imageModal.open && (
@@ -682,10 +711,6 @@ export default function GestionDeProductos() {
         </div>
       )}
 
-      <footer className="footer">
-        <p>"Nada Humano Me Es Ajeno"</p>
-        <p className="footer-copy">Sistema de Gestión UACM © 2026</p>
-      </footer>
     </>
   )
 }
