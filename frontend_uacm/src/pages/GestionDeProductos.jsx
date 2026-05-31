@@ -487,7 +487,7 @@ export default function GestionDeProductos() {
 
 
               {/* Datos Generales */}
-              <div className="form-section">
+              <div className="form-section form-section--info">
                 <p className="form-section-title"><i className="fas fa-info-circle"></i> Datos Generales</p>
                 <div className="form-row form-row-2col">
                   <div className="form-group">
@@ -529,7 +529,7 @@ export default function GestionDeProductos() {
               </div>
 
               {/* Inventario */}
-              <div className="form-section">
+              <div className="form-section form-section--stock">
                 <p className="form-section-title"><i className="fas fa-warehouse"></i> Inventario</p>
                 <div className="form-row form-row-2col">
                   <div className="form-group">
@@ -589,7 +589,7 @@ export default function GestionDeProductos() {
               </div>
 
               {/* Clasificación */}
-              <div className="form-section">
+              <div className="form-section form-section--catalog">
                 <p className="form-section-title"><i className="fas fa-tags"></i> Clasificación</p>
                 <div className="form-row form-row-2x2">
                   <div className="form-group">
